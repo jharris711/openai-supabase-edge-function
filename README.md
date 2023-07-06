@@ -25,9 +25,11 @@ A function that returns OpenAI Chat Completions. Deployable to Supabase Edge Fun
 ## Deploy to Supabase
 
 - Deploy your function to the Supabase cloud by running:
+
   ```
   supabase functions deploy --no-verify-jwt openai
   supabase secrets set --env-file ./supabase/.env.local
   ```
+
 - Then, check the function's dashboard for a URL to make `fetch` or other client requests.
 - To make things even easier, you can utilize one of the Supabase clients to access and invoke the functions.
