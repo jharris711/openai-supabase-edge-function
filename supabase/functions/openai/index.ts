@@ -1,6 +1,6 @@
 import 'xhr_polyfill';
 import { serve } from 'std/server';
-import { CreateCompletionRequest } from 'openai';
+import { CreateChatCompletionRequest } from 'openai';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,21 +15,52 @@ async function handler(req: Request) {
 
   const { messages } = await req.json();
 
-  const completionConfig: CreateCompletionRequest = {
+  const completionConfig: CreateChatCompletionRequest = {
     model: 'gpt-3.5-turbo',
     messages,
     stream: true,
+    max_tokens: 2048,
   };
 
-  return await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      ...corsHeaders,
-      Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-      'Content-Type': 'text/event-stream',
-    },
-    body: JSON.stringify(completionConfig),
-  });
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(completionConfig),
+    });
+
+    if (response.ok) {
+      return new Response(response.body, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream',
+        },
+      });
+    } else {
+      // Create an error response with appropriate status code and error message
+      const errorMessage = `Request failed with status: ${response.status} ${response.statusText}`;
+      return new Response(errorMessage, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream',
+        },
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return new Response(error, {
+      status: 500,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+      },
+    });
+  }
 }
 
 serve(handler);
