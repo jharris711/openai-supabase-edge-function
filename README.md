@@ -1,4 +1,5 @@
 # openai-supabase-edge-function
+
 A function that returns OpenAI Chat Completions. Deployable to Supabase Edge Functions. Uses Deno Javascript runtime env.
 
 # To deploy this function
